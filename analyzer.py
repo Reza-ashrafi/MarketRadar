@@ -1,12 +1,26 @@
-📊 گزارش نقره
+def analyze():
+    silver = 28.5
+    usd = 60000
 
-🌍 انس جهانی: 28.5$
-💵 دلار: 60000
+    intrinsic = silver * usd
+    market = 56_000_000
 
-📦 ارزش منصفانه: 52,000,000
-🏪 قیمت بازار: 56,000,000
+    bubble = ((market - intrinsic) / intrinsic) * 100
+    score = 100 - abs(bubble) * 2
 
-💣 حباب: +7.6%
-⭐ امتیاز: 78/100
+    if score < 0:
+        score = 0
+    if score > 100:
+        score = 100
 
-🟡 ورود پله‌ای منطقی
+    decision = "🟢 خوب" if bubble < 5 else "🟡 متوسط" if bubble < 15 else "🔴 پرریسک"
+
+    return {
+        "silver": silver,
+        "usd": usd,
+        "intrinsic": intrinsic,
+        "market": market,
+        "bubble": bubble,
+        "score": score,
+        "decision": decision
+    }
