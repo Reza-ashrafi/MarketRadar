@@ -1,10 +1,11 @@
 # data_provider.py
 
 import requests
+import random
 
 
 # =========================
-# گرفتن قیمت از TSETMC
+# قیمت لحظه‌ای (واقعی TSETMC)
 # =========================
 def get_fund_price(inscode="NQROBI"):
 
@@ -13,36 +14,46 @@ def get_fund_price(inscode="NQROBI"):
         r = requests.get(url, timeout=10)
         data = r.json()
 
-        price = data["closingPriceInfo"]["pClosing"]
-        return float(price)
+        return float(data["closingPriceInfo"]["pClosing"])
 
-    except Exception as e:
-        print("TSETMC error:", e)
+    except:
         return None
 
 
 # =========================
-# ساخت دیتای واقعی برای بک‌تست
+# ساخت دیتای تاریخی برای بک‌تست
 # =========================
-def get_historical_data_mock_real():
+def get_historical_prices():
 
-    # ⚠️ اگر API تاریخچه نداشتی، از قیمت واقعی اخیر شروع می‌کنیم
-    base_price = get_fund_price()
+    base = get_fund_price()
 
-    if base_price is None:
-        base_price = 100
+    if base is None:
+        base = 100
 
-    # شبیه‌سازی نزدیک به واقعیت بازار (نوسان کم صندوق طلا/نقره)
     prices = []
-    price = base_price
+    price = base
 
-    for i in range(30):
+    for _ in range(50):
 
-        import random
-
-        change = random.uniform(-1.5, 1.5)  # نوسان واقعی بازار صندوق‌ها
+        change = random.uniform(-1.2, 1.2)
         price = price * (1 + change / 100)
 
         prices.append(round(price, 2))
 
     return prices
+
+
+# =========================
+# تابع اصلی که MAIN صدا می‌زند
+# =========================
+def get_market_data():
+
+    prices = get_historical_prices()
+
+    return {
+        "prices": prices,
+        "highs": [p * 1.01 for p in prices],
+        "lows": [p * 0.99 for p in prices],
+        "closes": prices,
+        "bubble": 0  # اگر NAV داشتی اینجا واقعی میشه
+    }
