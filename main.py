@@ -3,35 +3,9 @@
 import time
 from datetime import datetime
 
+from data_provider import get_market_data
 from analyzer import analyze
 from telegram_sender import send_report
-
-
-# =========================
-# MOCK DATA (فعلاً دیتای واقعی بازار)
-# بعداً اینو به API وصل می‌کنیم
-# =========================
-def get_market_data():
-
-    # اینجا فعلاً دیتا نمونه است
-    # بعداً از API واقعی یا بورس جایگزین میشه
-
-    prices = [100, 101, 102, 101, 103, 104, 105, 106, 107, 108,
-              109, 110, 111, 112, 113, 114, 115]
-
-    highs = [p + 1 for p in prices]
-    lows = [p - 1 for p in prices]
-    closes = prices
-
-    bubble = 3.5  # فعلاً فرضی (بعداً واقعی میشه)
-
-    return {
-        "prices": prices,
-        "highs": highs,
-        "lows": lows,
-        "closes": closes,
-        "bubble": bubble
-    }
 
 
 # =========================
@@ -43,24 +17,36 @@ def is_market_open():
 
 
 # =========================
-# RUN ENGINE
+# RUN BOT
 # =========================
 def run_bot():
 
-    print("SilverMind Pro Started...")
+    print("SilverMind Pro - LIVE MODE Started...")
 
     last_signal = None
 
     while True:
 
         try:
+
             if not is_market_open():
-                print("Market Closed - Waiting...")
+                print("Market Closed...")
                 time.sleep(300)
                 continue
 
+            # =========================
+            # REAL DATA
+            # =========================
             market_data = get_market_data()
 
+            if market_data is None:
+                print("No market data available")
+                time.sleep(300)
+                continue
+
+            # =========================
+            # ANALYSIS
+            # =========================
             result = analyze(market_data)
 
             if not result:
@@ -71,19 +57,19 @@ def run_bot():
             signal = result["signal"]
 
             # =========================
-            # FILTER: فقط تغییر سیگنال ارسال شود
+            # FILTER (جلوگیری از اسپم)
             # =========================
             if signal != last_signal:
                 send_report(result)
                 last_signal = signal
-                print("Signal Sent:", signal)
+                print("📡 Sent:", signal)
             else:
                 print("No change:", signal)
 
-            time.sleep(300)  # هر 5 دقیقه بررسی
+            time.sleep(300)  # هر 5 دقیقه
 
         except Exception as e:
-            print("Error:", e)
+            print("ERROR:", e)
             time.sleep(60)
 
 
