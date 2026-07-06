@@ -3,9 +3,6 @@
 from config import WEIGHTS
 
 
-# =========================
-# Trend Score
-# =========================
 def trend_score(ema20, ema50):
     if ema20 > ema50:
         return 80
@@ -14,9 +11,6 @@ def trend_score(ema20, ema50):
     return 60
 
 
-# =========================
-# Value Score (حباب)
-# =========================
 def value_score(bubble):
     if bubble < 0:
         return 90
@@ -29,18 +23,15 @@ def value_score(bubble):
     return 20
 
 
-# =========================
-# Momentum Score
-# =========================
 def momentum_score(rsi, macd):
     score = 50
 
     if 40 <= rsi <= 60:
-        score += 20  # ناحیه سالم
+        score += 20
     elif rsi > 70:
-        score -= 20  # اشباع خرید
+        score -= 20
     elif rsi < 30:
-        score += 10  # اشباع فروش
+        score += 10
 
     if macd > 0:
         score += 15
@@ -50,60 +41,44 @@ def momentum_score(rsi, macd):
     return max(0, min(100, score))
 
 
-# =========================
-# Risk Score (برعکس: هرچی بیشتر، بهتر)
-# =========================
 def risk_score(atr, bollinger_width):
     score = 100
 
-    if atr > 0:
+    if atr:
         score -= atr * 2
 
-    if bollinger_width > 0:
+    if bollinger_width:
         score -= bollinger_width * 1.5
 
     return max(0, min(100, score))
 
 
-# =========================
-# Capital Score
-# =========================
-def capital_score(score):
-    if score > 85:
+def capital_score(avg_score):
+    if avg_score > 85:
         return 90
-    elif score > 70:
+    elif avg_score > 70:
         return 70
-    elif score > 55:
+    elif avg_score > 55:
         return 40
     return 10
 
 
-# =========================
-# FINAL SCORE (مغز اصلی)
-# =========================
 def final_score(inputs):
-    """
-    inputs:
-    {
-        ema20, ema50,
-        bubble,
-        rsi, macd,
-        atr, bollinger_width
-    }
-    """
 
     trend = trend_score(inputs["ema20"], inputs["ema50"])
     value = value_score(inputs["bubble"])
     momentum = momentum_score(inputs["rsi"], inputs["macd"])
     risk = risk_score(inputs["atr"], inputs["bollinger_width"])
+
     capital = capital_score((trend + value + momentum + risk) / 4)
 
-    total =
+    total = (
         trend * WEIGHTS["trend"] +
         value * WEIGHTS["value"] +
         momentum * WEIGHTS["momentum"] +
         risk * WEIGHTS["risk"] +
         capital * WEIGHTS["capital"]
+    )
 
     confidence = min(1.0, (trend + value + momentum + risk) / 400)
 
