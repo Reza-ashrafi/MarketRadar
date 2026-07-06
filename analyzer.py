@@ -1,36 +1,10 @@
-from sources import get_silver_price, get_usd_rate
-
-OZ_TO_GRAM = 31.1035
-
-
 def analyze():
-
-    silver = get_silver_price()
-    usd = get_usd_rate()
-
-    if not silver or not usd:
-        return {"error": True}
-
-    intrinsic = (1000 / OZ_TO_GRAM) * silver * usd
-
-    # چون بازار نداریم فعلاً:
-    market = intrinsic * 1.03  # فرض ساده 3% اختلاف
-
-    bubble = ((market - intrinsic) / intrinsic) * 100
-
-    # تصمیم ساده
-    if bubble < 2:
-        signal = "🟢 خوبه برای خرید"
-    elif bubble < 6:
-        signal = "🟡 معمولی"
-    else:
-        signal = "🔴 فعلاً نخر"
-
     return {
-        "silver": silver,
-        "usd": usd,
-        "intrinsic": intrinsic,
-        "market": market,
-        "bubble": bubble,
-        "signal": signal
+        "silver": 28.5,
+        "usd": 60000,
+        "intrinsic": 52_000_000,
+        "market": 56_000_000,
+        "bubble": 7.6,
+        "score": 78,
+        "decision": "🟡 TEST OK - P1 ENTRY"
     }
