@@ -1,18 +1,11 @@
-import time
-from telegram_bot import send_report
+print("BOT STARTED")
 
+from telegram_sender import send_report
 
-def run():
-    while True:
-        try:
-            send_report()
-            print("sent")
+try:
+    send_report()
+    print("MESSAGE SENT")
+except Exception as e:
+    print("ERROR:", e)
 
-        except Exception as e:
-            print("error:", e)
-
-        time.sleep(86400)  # 24h
-
-
-if __name__ == "__main__":
-    run()
+print("BOT DONE")
