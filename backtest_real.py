@@ -1,88 +1,65 @@
-# backtest_real.py
+# real_backtest.py
 
-import pandas as pd
 from analyzer import analyze
+from data_provider import get_historical_data_mock_real
 
 
-# =========================
-# LOAD REAL DATA
-# =========================
-def load_data(path="data.csv"):
-    df = pd.read_csv(path)
+def run():
 
-    prices = df["price"].tolist()
+    prices = get_historical_data_mock_real()
 
-    return prices
+    position = 0
+    entry = 0
+    trades = []
+    equity = 100
 
+    for i in range(20, len(prices)):
 
-# =========================
-# BUILD WINDOW DATA
-# =========================
-def build_window(prices, idx, window=30):
+        window = prices[i-20:i]
 
-    window_prices = prices[idx-window:idx]
-
-    return {
-        "prices": window_prices,
-        "highs": [p * 1.01 for p in window_prices],
-        "lows": [p * 0.99 for p in window_prices],
-        "closes": window_prices,
-        "bubble": 0  # اگر NAV داری اینجا واقعی می‌کنی
-    }
-
-
-# =========================
-# BACKTEST ENGINE
-# =========================
-def run_backtest():
-
-    prices = load_data()
-
-    if len(prices) < 40:
-        print("❌ Not enough data")
-        return
-
-    results = []
-
-    buy_signals = 0
-    sell_signals = 0
-    no_trade = 0
-
-    for i in range(30, len(prices)):
-
-        data = build_window(prices, i)
+        data = {
+            "prices": window,
+            "highs": [p * 1.01 for p in window],
+            "lows": [p * 1.01 for p in window],
+            "closes": window,
+            "bubble": (window[-1] - window[0]) / window[0] * 100
+        }
 
         result = analyze(data)
-
         signal = result["signal"]
-        score = result["scores"]["total_score"]
 
-        results.append({
-            "index": i,
-            "price": prices[i],
-            "signal": signal,
-            "score": score
-        })
+        price = prices[i]
 
-        if signal in ["BUY", "STRONG_BUY"]:
-            buy_signals += 1
-        elif signal in ["RISK"]:
-            sell_signals += 1
-        else:
-            no_trade += 1
+        if signal in ["BUY", "STRONG_BUY"] and position == 0:
+            position = 1
+            entry = price
+            print(f"BUY @ {price}")
 
-    # =========================
-    # REPORT
-    # =========================
+        elif signal in ["RISK", "NO_TRADE"] and position == 1:
+
+            profit = ((price - entry) / entry) * 100
+            equity += equity * (profit / 100)
+
+            trades.append(profit)
+
+            print(f"SELL @ {price} | PnL: {profit:.2f}%")
+
+            position = 0
+
     print("\n📊 REAL BACKTEST REPORT")
-    print("---------------------------")
-    print("Total Days:", len(results))
-    print("BUY:", buy_signals)
-    print("RISK/SELL:", sell_signals)
-    print("NO TRADE:", no_trade)
+    print("------------------------")
 
-    # میانگین امتیاز سیگنال‌ها
-    avg_score = sum(r["score"] for r in results) / len(results)
+    if trades:
+        win = len([t for t in trades if t > 0]) / len(trades) * 100
+        avg = sum(trades) / len(trades)
+    else:
+        win = avg = 0
 
-    print("---------------------------")
-    print("Avg Score:", round(avg_score, 2))
+    print("Trades:", len(trades))
+    print("Win Rate:", win)
+    print("Avg Profit:", avg)
+    print("Final Equity:", equity)
+
+
+if __name__ == "__main__":
+    run()
