@@ -7,7 +7,6 @@ from data_provider import get_market_data
 from analyzer import analyze
 from telegram_sender import send_report
 
-
 # =========================
 # CHECK MARKET HOURS
 # =========================
@@ -16,6 +15,8 @@ def is_market_open():
     return 12 <= hour <= 17
 
 
+def is_market_open():
+    return True
 # =========================
 # RUN BOT
 # =========================
