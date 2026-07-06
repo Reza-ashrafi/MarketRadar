@@ -3,24 +3,7 @@ import statistics
 
 
 # =========================
-# 🥇 نقره جهانی (XAG)
-# =========================
-def get_silver_price():
-    try:
-        r = requests.get("https://api.metals.live/v1/spot", timeout=5)
-        data = r.json()
-
-        for item in data:
-            if item.get("metal") == "silver":
-                return float(item.get("price"))
-    except:
-        pass
-
-    return None
-
-
-# =========================
-# 🥇 طلا جهانی (برای GSR پویا)
+# 🥇 طلا جهانی
 # =========================
 def get_gold_price():
     try:
@@ -37,7 +20,15 @@ def get_gold_price():
 
 
 # =========================
-# 💵 دلار (نیمه واقعی)
+# 🥈 نقره (بدون API مستقیم)
+# =========================
+def calc_silver_from_gold(gold):
+    gsr = statistics.mean([72, 75, 78, 82, 85])
+    return gold / gsr
+
+
+# =========================
+# 💵 دلار
 # =========================
 def get_usd_price():
     try:
@@ -46,93 +37,105 @@ def get_usd_price():
             timeout=5
         )
         data = r.json()
-
-        irr = data["rates"]["IRR"]
-        return float(irr) / 10
+        return float(data["rates"]["IRR"]) / 10
     except:
         return 600000
 
 
 # =========================
-# 🏪 قیمت بازار ایران (نقره واقعی داخلی تقریبی)
+# 📦 ارزش ذاتی
 # =========================
-def get_iran_market_price(silver_usd, usd):
-
-    # تبدیل جهانی به ریال
-    base = (silver_usd * usd * 31.1) / 1000
-
-    # پریمیوم واقعی‌تر ایران (نه ثابت ساده)
-    # بر اساس رفتار بازار: 3% تا 12%
-    import random
-    premium = statistics.mean([3, 6, 9, 12])
-
-    return base * (1 + premium / 100)
+def intrinsic_value(silver, usd):
+    return (silver * usd * 31.1) / 1000
 
 
 # =========================
-# 🧠 محاسبه GSR پویا
-# =========================
-def calc_silver_from_gold(gold):
-    # نسبت واقعی متغیر (نه ثابت)
-    # بین 70 تا 90 نوسان دارد
-    gsr = statistics.mean([70, 75, 80, 85])
-
-    return gold / gsr
-
-
-# =========================
-# 💣 حباب واقعی ایران
+# 💣 حباب
 # =========================
 def bubble(intrinsic, market):
     return ((market - intrinsic) / intrinsic) * 100
 
 
 # =========================
-# 📊 تحلیل نهایی حرفه‌ای
+# 📊 روند ساده (Momentum)
+# =========================
+history = []
+
+
+def get_trend(current_price):
+    history.append(current_price)
+
+    # نگه داشتن فقط 5 دیتا آخر
+    if len(history) > 5:
+        history.pop(0)
+
+    if len(history) < 5:
+        return "neutral"
+
+    if history[-1] > history[0]:
+        return "up"
+    elif history[-1] < history[0]:
+        return "down"
+    return "side"
+
+
+# =========================
+# 🧠 سیگنال تریدر واقعی
 # =========================
 def analyze():
 
-    silver_api = get_silver_price()
     gold = get_gold_price()
     usd = get_usd_price()
 
-    # اگر نقره API نبود → از طلا بساز
-    if silver_api is None:
-        silver = calc_silver_from_gold(gold)
-    else:
-        silver = silver_api
+    silver = calc_silver_from_gold(gold)
 
-    intrinsic = (silver * usd * 31.1) / 1000
+    intrinsic = intrinsic_value(silver, usd)
 
-    market = get_iran_market_price(silver, usd)
+    # بازار ایران (پریمیوم واقعی‌تر)
+    market = intrinsic * statistics.mean([1.04, 1.06, 1.08])
 
     b = bubble(intrinsic, market)
+
+    trend = get_trend(market)
 
     score = 100 - abs(b) * 2
     score = max(0, min(100, score))
 
     # =========================
-    # 🚦 سیگنال حرفه‌ای بازار ایران
+    # 🚦 منطق تریدر واقعی
     # =========================
-    if b < 2:
-        signal = "🟢 فرصت طلایی خرید"
-    elif b < 6:
+
+    signal = "⚪ بدون سیگنال"
+
+    # شرط خرید قوی
+    if b < 3 and trend == "up":
+        signal = "🟢 خرید قوی (ورود فوری)"
+
+    # ورود پله‌ای
+    elif b < 7 and trend != "down":
         signal = "🟢 ورود پله‌ای"
-    elif b < 10:
-        signal = "🟡 نرمال بازار"
-    elif b < 18:
-        signal = "🔴 اصلاح محتمل"
-    else:
-        signal = "🔴 حباب بالا - خطرناک"
+
+    # صبر
+    elif 7 <= b < 12:
+        signal = "🟡 صبر / بررسی"
+
+    # خروج
+    elif b > 15 and trend == "down":
+        signal = "🔴 خروج / ریسک بالا"
+
+    # حباب شدید
+    elif b > 20:
+        signal = "🔴 عدم ورود (حباب سنگین)"
 
     return {
+        "gold": round(gold, 2),
         "silver": round(silver, 3),
-        "gold": gold,
         "usd": usd,
         "intrinsic": intrinsic,
         "market": market,
-        "bubble": b,
-        "score": score,
+        "bubble": round(b, 2),
+        "trend": trend,
+        "score": round(score, 2),
         "signal": signal,
-        "mode": "IRAN_PRO_MODEL"
+        "mode": "TRADER_FINAL"
     }
