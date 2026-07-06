@@ -1,5 +1,5 @@
-BOT_TOKEN = "PUT_YOUR_BOT_TOKEN_HERE"
-CHAT_ID = "PUT_YOUR_CHAT_ID_HERE"
+BOT_TOKEN = "8961298923:AAFbuiQm0peaGQ4gssD34G0shYeBjk2RaN8"
+CHAT_ID = "111954131"
 
 SILVER_API = "https://api.metals.live/v1/spot/silver"
 
