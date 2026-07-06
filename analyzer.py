@@ -1,24 +1,54 @@
+import requests
+
+
+def get_silver_price():
+    try:
+        url = "https://api.metals.live/v1/spot"
+        r = requests.get(url, timeout=10)
+        data = r.json()
+
+        # پیدا کردن نقره داخل لیست
+        for item in data:
+            if item["metal"] == "silver":
+                return float(item["price"])
+
+    except:
+        return 28.5  # fallback
+
+
+def get_usd_price():
+    try:
+        # نرخ تقریبی (فعلاً fallback)
+        return 60000
+    except:
+        return 60000
+
+
 def analyze():
-    silver = 28.5
-    usd = 60000
+    silver = get_silver_price()
+    usd = get_usd_price()
 
-    intrinsic = silver * usd
-    market = 56_000_000
+    fair_value = (silver * usd * 31.1) / 1000
 
-    bubble = ((market - intrinsic) / intrinsic) * 100
+    # اگر قیمت بازار نداری → فرض منطقی
+    market = fair_value * 1.05
+
+    bubble = ((market - fair_value) / fair_value) * 100
     score = 100 - abs(bubble) * 2
 
-    if score < 0:
-        score = 0
-    if score > 100:
-        score = 100
+    score = max(0, min(100, score))
 
-    decision = "🟢 خوب" if bubble < 5 else "🟡 متوسط" if bubble < 15 else "🔴 پرریسک"
+    if bubble < 5:
+        decision = "🟢 مناسب ورود"
+    elif bubble < 15:
+        decision = "🟡 محتاط"
+    else:
+        decision = "🔴 پرریسک"
 
     return {
         "silver": silver,
         "usd": usd,
-        "intrinsic": intrinsic,
+        "fair": fair_value,
         "market": market,
         "bubble": bubble,
         "score": score,
