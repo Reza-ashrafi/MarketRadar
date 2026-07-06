@@ -10,16 +10,16 @@ def build_message(data):
     return f"""
 📊 گزارش نقره
 
-🌍 قیمت جهانی: {data['silver']:.2f} $
-💵 دلار: {int(data['usd']):,}
+🌍 قیمت جهانی: {data.get('silver', 0):.2f} $
+💵 دلار: {int(data.get('usd', 0)):,}
 
-📦 ارزش ذاتی: {int(data['intrinsic']):,}
-🏪 بازار: {int(data['market']):,}
+📦 ارزش ذاتی: {int(data.get('intrinsic', 0)):,}
+🏪 بازار: {int(data.get('market', 0)):,}
 
-📈 حباب: {data['bubble']:.2f}%
-⭐ امتیاز: {data['score']:.0f}/100
+📈 حباب: {data.get('bubble', 0):.2f}%
+⭐ امتیاز: {data.get('score', 0):.0f}/100
 
-{data['decision']}
+{data.get('decision', 'بدون تحلیل')}
 """
 
 
