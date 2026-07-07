@@ -13,27 +13,27 @@ class TSETMCClient:
 
         print("TSETMC REQUEST START")
 
-        last_error = None
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
 
-        for i in range(RETRY_COUNT):
+        try:
 
-            try:
-                print(f"TRY {i + 1}")
+            response = requests.get(
+                url,
+                headers=headers,
+                timeout=10
+            )
 
-                response = requests.get(
-                    url,
-                    timeout=self.timeout
-                )
+            print("STATUS:", response.status_code)
 
-                print("STATUS:", response.status_code)
+            print("LENGTH:", len(response.text))
 
-                if response.status_code == 200:
-                    return response.text
+            return response.text
 
-            except Exception as e:
-                last_error = e
-                print("ERROR:", e)
+        except Exception as e:
 
-        raise Exception(
-            f"TSETMC connection failed: {last_error}"
-        )
+            print("REQUEST ERROR:")
+            print(e)
+
+            raise e
