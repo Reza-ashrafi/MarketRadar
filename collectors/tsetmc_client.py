@@ -1,39 +1,20 @@
 import requests
 
-from config.settings import REQUEST_TIMEOUT, RETRY_COUNT
-
 
 class TSETMCClient:
 
-    def __init__(self):
-        self.timeout = REQUEST_TIMEOUT
-
-
     def get(self, url):
 
-        print("TSETMC REQUEST START")
+        print("REQUEST:", url)
 
-        headers = {
-            "User-Agent": "Mozilla/5.0"
-        }
+        response = requests.get(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0"
+            },
+            timeout=30
+        )
 
-        try:
+        print("STATUS:", response.status_code)
 
-            response = requests.get(
-                url,
-                headers=headers,
-                timeout=10
-            )
-
-            print("STATUS:", response.status_code)
-
-            print("LENGTH:", len(response.text))
-
-            return response.text
-
-        except Exception as e:
-
-            print("REQUEST ERROR:")
-            print(e)
-
-            raise e
+        return response.text
