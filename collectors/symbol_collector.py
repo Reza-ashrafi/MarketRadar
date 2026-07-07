@@ -11,8 +11,7 @@ class SymbolCollector:
 
         print("SYMBOL COLLECT START")
 
-        # تست اولیه اتصال
-        url = "https://www.tsetmc.com"
+        url = "https://google.com"
 
         print("REQUEST URL READY")
 
