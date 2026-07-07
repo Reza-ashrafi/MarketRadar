@@ -1,5 +1,3 @@
-import json
-
 from collectors.tsetmc_client import TSETMCClient
 
 
@@ -10,12 +8,14 @@ class SymbolCollector:
 
     def collect(self):
 
-        url = (
-            "https://cdn.tsetmc.com/api/Instrument/GetInstrumentInfo"
-        )
+        print("SYMBOL COLLECT START")
+
+        url = "https://cdn.tsetmc.com/api/Instrument/GetInstrumentInfo"
+
+        print("REQUEST URL READY")
 
         response = self.client.get(url)
 
-        data = json.loads(response)
+        print("RESPONSE RECEIVED")
 
-        return data
+        return response
