@@ -6,11 +6,20 @@ def main():
 
     print(f"{PROJECT_NAME} Started")
 
-    collector = SymbolCollector()
+    try:
+        collector = SymbolCollector()
 
-    symbols = collector.collect()
+        data = collector.collect()
 
-    print(symbols.keys())
+        print("TSETMC Connected")
+
+        print(type(data))
+
+        print(data.keys())
+
+    except Exception as e:
+        print("ERROR:")
+        print(e)
 
 
 if __name__ == "__main__":
